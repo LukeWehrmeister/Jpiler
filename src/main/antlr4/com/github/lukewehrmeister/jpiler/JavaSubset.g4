@@ -42,7 +42,7 @@ EQ         : '==' ;
 NEQ        : '!=' ;
 PLUSEQ     : '+=' ;
 MINEQ      : '-=' ;
-STAREQ     : '*=' ;
+TIMESEQ     : '*=' ;
 DIVEQ      : '/=' ;
 MODULEQ    : '%=' ;
 AND        : '&&' ;
@@ -61,13 +61,32 @@ ASSIGN     : '=' ;
 
 
 //Eventually change this, these are all classes that are basically acting as keywords for the time being
-SIMPLE_KEYWORDS : 'Integer' | 'Double' | 'Float' | 'Character' | 'Boolean' | 'Byte' | 'Long' | 'Object' | 'Void' ;
+SIMPLE_KEYWORDS : 'Integer' | 'Double' | 'Float' | 'Character' | 'Boolean' | 'Byte' | 'Long' | 'Object' | 'Void' ;  //SIMPLE_KEYWORDS means keywords for simplicity's sake
 
-//INVALID_IDENTIFIER: [0-9]+[a-zA-Z_][a-zA-Z0-9_]* ;         FIXME: 5employees
+//Integer Literals Involving Letters
+HEX_LITERAL : '0' [xX] [0-9a-fA-F]+;
+BINARY_LITERAL : '0' [bB] [01]+;
+
+// Boolean Literals
+TRUE : 'true';
+FALSE : 'false';
+
+// Null Literal
+NULL_LITERAL : 'null';
+
+INVALID_IDENTIFIER: [0-9]+[a-zA-Z_][a-zA-Z0-9_]* ; 
 IDENTIFIER     : [a-zA-Z_][a-zA-Z0-9_]*;
 
-//FLOAT: [0-9]* '.' [0-9]+ ([eE] [+-]? [0-9]+)? [fF]? ;       FIXME: 5.5
-INTEGER: [0-9]+ ;
+// Integer Literals No Letters
+DECIMAL_LITERAL : [1-9] [0-9]* | '0';
+OCTAL_LITERAL : '0' [0-7]+;
+
+// Floating-Point Literals
+FLOAT_LITERAL : [0-9]+ '.' [0-9]* ([eE] [+-]? [0-9]+)? [fFdD]?;
+EXPONENT_PART : [eE] [+-]? [0-9]+;
+
+
+
 
 DOT           : '.' ;
 LPAREN        : '(' ;
@@ -76,7 +95,7 @@ LBRACE        : '{' ;
 RBRACE        : '}' ;
 SEMI          : ';' ;
 COMMA         : ',' ;
-STRINGLIT        : '"' (~["\\] | '\\' .)*? '"' ;
+STRINGLIT     : '"' (~["\\] | '\\' .)*? '"' ;
 CHARACTER     : '\'' (~['\\] | '\\' .) '\'' ;
 
 
@@ -168,22 +187,44 @@ expressionStatement
     ;
 
 expression
-    : primaryExpression (operator primaryExpression)* ;
+    : primaryExpression (operator primaryExpression)* 
+    | prefixExpression
+    | postfixExpression
+    ;
+
+prefixExpression
+    : (INCREMENT | DECREMENT) primaryExpression  // Only one `++` or `--`
+    ;
+
+postfixExpression
+    : primaryExpression (INCREMENT | DECREMENT)  // Only one `++` or `--`
+    ;
 
 primaryExpression
-    : INTEGER
+    : DECIMAL_LITERAL
+    | HEX_LITERAL
+    | BINARY_LITERAL
+    | OCTAL_LITERAL
     | STRINGLIT
     | CHARACTER
     | IDENTIFIER
     | LPAREN expression RPAREN
+    | TRUE
+    | FALSE
+    | NULL_LITERAL
     ;
 
 operator
     : PLUS
+    | PLUSEQ
     | MINUS
+    | MINEQ
     | TIMES
+    | TIMESEQ
     | DIVIDE
+    | DIVEQ
     | MODULUS
+    | MODULEQ
     | LT
     | GT
     | LE

@@ -61,6 +61,17 @@ class JavaSubsetParserTest {
     }
 
 
+    @Test
+    void testValidIfElseIfElseStatement() {
+        String input = "if(x == true){y = z + 5;} else if(y== false){y++;}else{z /= 3;}";
+        JavaSubsetParser parser = parse(input);
+        ParseTree tree = parser.compilationUnit();
+
+        assertNotNull(tree);
+        assertEquals(0, parser.getNumberOfSyntaxErrors(), "Should have no syntax errors.");
+    }
+
+
 
     
 
@@ -88,7 +99,7 @@ class JavaSubsetParserTest {
 
     @Test
     void testInvalidSyntaxMissingClassName() {
-        String input = "class { int x; }"; // Missing class name
+        String input = "class { int x; }"; 
         JavaSubsetParser parser = parse(input);
         ParseTree tree = parser.compilationUnit();
 
