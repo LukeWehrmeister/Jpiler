@@ -129,6 +129,21 @@ class JavaSubsetLexerTest {
         assertEquals(JavaSubsetLexer.RBRACE, tokens.get(11).getType());
     }
 
+    @Test
+    void testValidIncrementTokens() {
+        String input = "x++;";
+        CommonTokenStream tokens = getLexerTokenStream(input);
+        tokens.fill();
+
+        assertEquals("x", tokens.get(0).getText());
+        assertEquals("++", tokens.get(1).getText());
+        assertEquals(";", tokens.get(2).getText());
+
+        assertEquals(JavaSubsetLexer.IDENTIFIER, tokens.get(0).getType());
+        assertEquals(JavaSubsetLexer.INCREMENT, tokens.get(1).getType());
+        assertEquals(JavaSubsetLexer.SEMI, tokens.get(2).getType());
+    }
+
 
     @Test
     public void testFloatDeclerationTokens() {

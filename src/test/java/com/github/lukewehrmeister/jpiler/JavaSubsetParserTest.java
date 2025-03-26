@@ -72,6 +72,15 @@ class JavaSubsetParserTest {
     }
 
 
+    // @Test
+    // void testIncrement() {
+    //     String input = "x++;";
+    //     JavaSubsetParser parser = parse(input);
+    //     ParseTree tree = parser.statement();
+
+    //     assertNotNull(tree);
+    //     assertEquals(0, parser.getNumberOfSyntaxErrors(), "Should have no syntax errors.");
+    // }
 
     
 
