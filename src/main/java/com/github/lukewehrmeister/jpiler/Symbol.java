@@ -1,13 +1,29 @@
 package com.github.lukewehrmeister.jpiler;
 
 public class Symbol {
-    private String name;  // Name of the symbol (e.g., variable or function name)
-    private String type;  // Type of the symbol (e.g., int, float, function type)
+    private final String name;  
+    private final SemanticType type;  
+    private final SymbolKind kind;
+    private final String accessModifier; 
+    private boolean initialized;
     
     // Constructor
-    public Symbol(String name, String type) {
+    public Symbol(String name, SemanticType type, SymbolKind kind, String accessModifier, boolean initialized) {
         this.name = name;
         this.type = type;
+        this.kind = kind;
+        this.accessModifier = accessModifier;
+        this.initialized = initialized;
+    }
+
+    //For methods and classes
+    public Symbol(String name, SemanticType type, SymbolKind kind, String accessModifier) {
+        this(name, type, kind, accessModifier, false);
+    }
+
+    //For variables and parameters
+    public Symbol(String name, SemanticType type, SymbolKind kind, boolean initialized) {
+        this(name, type, kind, "default", initialized);
     }
 
     // Getters
@@ -15,17 +31,25 @@ public class Symbol {
         return name;
     }
 
-    public String getType() {
+    public SemanticType getType() {
         return type;
     }
 
-    // Setters
-    public void setName(String name) {
-        this.name = name;
+    public SymbolKind getKind() {
+        return kind;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public String getAccessModifier() {
+        return accessModifier;
+    }
+
+
+    public boolean getInitialized() {
+        return initialized;
+    }
+
+    public void setInitialized(boolean initialized) {
+        this.initialized = initialized;
     }
     
     // Override toString for easier debugging

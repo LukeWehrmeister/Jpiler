@@ -4,6 +4,10 @@ grammar JavaSubset;
 //                                                             Lexer Rules
 // =======================================================================================================================================
 
+
+STRINGLIT     : '"' (~["\\] | '\\' .)*? '"' ;
+CHARACTER     : '\'' (~['\\] | '\\' .) '\'' ;
+
 //Data Type Keywords
 BYTE : 'byte' ;
 SHORT : 'short' ;
@@ -13,6 +17,7 @@ FLOAT : 'float' ;
 DOUBLE : 'double' ;
 BOOLEAN : 'boolean' ;
 CHAR : 'char' ;
+STRINGARGS : 'String[] args' ; //done short-term for simplicity
 STRING : 'String' ;
 
 //Conditional Keywords
@@ -95,8 +100,6 @@ LBRACE        : '{' ;
 RBRACE        : '}' ;
 SEMI          : ';' ;
 COMMA         : ',' ;
-STRINGLIT     : '"' (~["\\] | '\\' .)*? '"' ;
-CHARACTER     : '\'' (~['\\] | '\\' .) '\'' ;
 
 
 COMMENT        : '//' ~[\r\n]* -> skip ;
@@ -117,25 +120,30 @@ INVALID_CHAR : . ;
 // =======================================================================================================================================
 
 compilationUnit
-    : statement+ EOF
+    : classDeclaration* EOF
     ;
 
-program
-    : statement+ ;
+classDeclaration
+    : accessModifier? CLASS IDENTIFIER classBody
+    ;
+
+classBody
+    : LBRACE classBodyDeclaration* RBRACE
+    ;
+
+classBodyDeclaration
+    : methodDeclaration
+    | variableDeclaration
+    ;
 
 statement
-    : classDeclaration
-    | methodDeclaration
-    | variableDeclaration
+    : variableDeclaration
     | assignment
     | expressionStatement
     | controlStructure
     | block
+    | returnStatement
     | SEMI //empty statement
-    ;
-
-classDeclaration
-    : CLASS IDENTIFIER block
     ;
 
 methodDeclaration
@@ -155,6 +163,7 @@ returnType
 
 parameterList
     : parameter (COMMA parameter)*
+    | STRINGARGS //done for simplicity
     ;
 
 parameter
@@ -174,12 +183,24 @@ type
     //| IDENTIFIER // For user-defined types
     ;
 
+variableDeclarationExpression
+    : type variableDeclarators
+    ;
+
+variableDeclarators
+    : variableDeclarator (COMMA variableDeclarator)*
+    ;
+
+variableDeclarator
+    : IDENTIFIER (ASSIGN expression)?
+    ;
+
 variableDeclaration
-    : type IDENTIFIER ( ASSIGN expression )? SEMI
+    : type variableDeclarators SEMI
     ;
 
 assignment
-    : IDENTIFIER ASSIGN expression SEMI
+    : IDENTIFIER ASSIGN expression
     ;
 
 expressionStatement
@@ -187,33 +208,66 @@ expressionStatement
     ;
 
 expression
-    : primaryExpression (operator primaryExpression)* 
-    | prefixExpression
+    : assignment
+    | logicalOrExpression
+    ;
+
+logicalOrExpression
+    : logicalAndExpression (OR logicalAndExpression)*
+    ;
+
+logicalAndExpression
+    : equalityExpression (AND equalityExpression)*
+    ;
+
+equalityExpression
+    : relationalExpression (equalityOperator relationalExpression)*
+    ;
+
+relationalExpression
+    : additiveExpression (relationalOperator additiveExpression)*
+    ;
+
+additiveExpression
+    : multiplicativeExpression (additiveOperator multiplicativeExpression)*
+    ;
+
+multiplicativeExpression
+    : unaryExpression (multiplicativeOperator unaryExpression)*
+    ;
+
+unaryExpression
+    : unaryOperator unaryExpression
     | postfixExpression
     ;
 
-prefixExpression
-    : (INCREMENT | DECREMENT) primaryExpression  // Only one `++` or `--`
-    ;
-
 postfixExpression
-    : primaryExpression (INCREMENT | DECREMENT)  // Only one `++` or `--`
+    : primaryExpression postfixOperator*
     ;
 
 primaryExpression
-    : DECIMAL_LITERAL
-    | HEX_LITERAL
-    | BINARY_LITERAL
-    | OCTAL_LITERAL
+    : integerLiteral
     | STRINGLIT
     | CHARACTER
     | IDENTIFIER
     | LPAREN expression RPAREN
-    | TRUE
-    | FALSE
+    | booleanLiteral
     | NULL_LITERAL
     ;
 
+booleanLiteral
+    : TRUE
+    | FALSE
+    ;
+
+integerLiteral
+    : DECIMAL_LITERAL
+    | HEX_LITERAL
+    | BINARY_LITERAL
+    | OCTAL_LITERAL
+    ;
+
+/*
 operator
     : PLUS
     | PLUSEQ
@@ -233,7 +287,42 @@ operator
     | NEQ
     | AND
     | OR
+    | NOT;
+    */
+
+equalityOperator
+    : EQ
+    | NEQ
+    ;
+
+relationalOperator
+    : LT
+    | GT
+    | LE
+    | GE
+    ;
+
+additiveOperator
+    : PLUS
+    | MINUS
+    ;
+
+multiplicativeOperator
+    : TIMES
+    | DIVIDE
+    | MODULUS
+    ;
+
+unaryOperator
+    : PLUS
+    | MINUS
     | NOT
+    | postfixOperator
+    ;
+
+postfixOperator
+    : INCREMENT
+    | DECREMENT
     ;
 
 controlStructure
@@ -244,7 +333,7 @@ controlStructure
     ;
 
 ifStatement
-    : IF LPAREN expression RPAREN block ( ELSE ifStatement | ELSE block )?
+    : IF LPAREN expression RPAREN block ( ELSE ( ifStatement | block ) )?
     ;
 
 whileLoop
@@ -256,10 +345,27 @@ doWhileLoop
     ;
 
 forLoop
-    : FOR LPAREN variableDeclaration expression SEMI assignment RPAREN block 
+    : FOR LPAREN (variableDeclarationExpression | assignmentExpressionList)? SEMI expression? SEMI updateExpressionList? RPAREN block
+    ;
+
+assignmentExpressionList
+    : assignment (COMMA assignment)*
+    ;
+
+updateExpressionList
+    : updateExpression (COMMA updateExpression)*
+    ;
+
+updateExpression
+    : assignment
+    | unaryExpression
+    | postfixExpression
     ;
 
 block
     : LBRACE statement* RBRACE
     ;
 
+returnStatement
+    : RETURN expression? SEMI
+    ;

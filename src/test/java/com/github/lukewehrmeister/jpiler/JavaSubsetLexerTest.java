@@ -107,26 +107,20 @@ class JavaSubsetLexerTest {
         assertEquals("void", tokens.get(2).getText());
         assertEquals("main", tokens.get(3).getText());
         assertEquals("(", tokens.get(4).getText());
-        assertEquals("String", tokens.get(5).getText());
-        assertEquals("[", tokens.get(6).getText());
-        assertEquals("]", tokens.get(7).getText());
-        assertEquals("args", tokens.get(8).getText());
-        assertEquals(")", tokens.get(9).getText());
-        assertEquals("{", tokens.get(10).getText());
-        assertEquals("}", tokens.get(11).getText());
+        assertEquals("String[] args", tokens.get(5).getText());
+        assertEquals(")", tokens.get(6).getText());
+        assertEquals("{", tokens.get(7).getText());
+        assertEquals("}", tokens.get(8).getText());
 
         assertEquals(JavaSubsetLexer.PUBLIC, tokens.get(0).getType());
         assertEquals(JavaSubsetLexer.STATIC, tokens.get(1).getType());
         assertEquals(JavaSubsetLexer.VOID, tokens.get(2).getType());
         assertEquals(JavaSubsetLexer.IDENTIFIER, tokens.get(3).getType());
         assertEquals(JavaSubsetLexer.LPAREN, tokens.get(4).getType());
-        assertEquals(JavaSubsetLexer.STRING, tokens.get(5).getType());
-        assertEquals(JavaSubsetLexer.INVALID_CHAR, tokens.get(6).getType());
-        assertEquals(JavaSubsetLexer.INVALID_CHAR, tokens.get(7).getType());
-        assertEquals(JavaSubsetLexer.IDENTIFIER, tokens.get(8).getType());
-        assertEquals(JavaSubsetLexer.RPAREN, tokens.get(9).getType());
-        assertEquals(JavaSubsetLexer.LBRACE, tokens.get(10).getType());
-        assertEquals(JavaSubsetLexer.RBRACE, tokens.get(11).getType());
+        assertEquals(JavaSubsetLexer.STRINGARGS, tokens.get(5).getType());
+        assertEquals(JavaSubsetLexer.RPAREN, tokens.get(6).getType());
+        assertEquals(JavaSubsetLexer.LBRACE, tokens.get(7).getType());
+        assertEquals(JavaSubsetLexer.RBRACE, tokens.get(8).getType());
     }
 
     @Test
@@ -271,14 +265,20 @@ class JavaSubsetLexerTest {
         CommonTokenStream tokens = getLexerTokenStream(input);
         tokens.fill();
 
-        // Print all tokens in the token stream
-        // for (Token token : tokens.getTokens()) {
-        //     System.out.println("Token: " + token.getText() + " Type: " + token.getType());
-        // }
-
         assertEquals("5employees", tokens.get(0).getText());
 
         assertEquals(JavaSubsetLexer.INVALID_IDENTIFIER, tokens.get(0).getType());
+    }
+
+    @Test
+    public void testKeywordWithinIdentifier() {
+        String input = "shortened";  
+        CommonTokenStream tokens = getLexerTokenStream(input);
+        tokens.fill();
+
+        assertEquals("shortened", tokens.get(0).getText());
+
+        assertEquals(JavaSubsetLexer.IDENTIFIER, tokens.get(0).getType());
     }
 
 

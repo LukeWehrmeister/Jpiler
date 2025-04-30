@@ -17,15 +17,15 @@ class JavaSubsetParserTest {
 
 
 
-    // @Test
-    // void testValidClass() {
-    //     String input = "class MyClass { public static void main(String[] args) { int x = 5; } }";
-    //     JavaSubsetParser parser = parse(input);
-    //     ParseTree tree = parser.compilationUnit();
+    @Test
+    void testValidClass() {
+        String input = "class MyClass { public static void main(String[] args) { int x = 5; } }";
+        JavaSubsetParser parser = parse(input);
+        ParseTree tree = parser.compilationUnit();
 
-    //     assertNotNull(tree);
-    //     assertEquals(0, parser.getNumberOfSyntaxErrors(), "Should have no syntax errors.");
-    // }
+        assertNotNull(tree);
+        assertEquals(0, parser.getNumberOfSyntaxErrors(), "Should have no syntax errors.");
+    }
 
 
     @Test
@@ -54,7 +54,7 @@ class JavaSubsetParserTest {
     void testValidIfStatement() {
         String input = "if (x > 0) { x = x - 1; } else { x = x + 1; }";
         JavaSubsetParser parser = parse(input);
-        ParseTree tree = parser.compilationUnit();
+        ParseTree tree = parser.ifStatement();
 
         assertNotNull(tree);
         assertEquals(0, parser.getNumberOfSyntaxErrors(), "Should have no syntax errors.");
@@ -63,24 +63,24 @@ class JavaSubsetParserTest {
 
     @Test
     void testValidIfElseIfElseStatement() {
-        String input = "if(x == true){y = z + 5;} else if(y== false){y++;}else{z /= 3;}";
+        String input = "if(x == true){y = z + 5;} else if(y== false){y++;}else{z = z/ 3;}";
         JavaSubsetParser parser = parse(input);
-        ParseTree tree = parser.compilationUnit();
+        ParseTree tree = parser.ifStatement();
 
         assertNotNull(tree);
         assertEquals(0, parser.getNumberOfSyntaxErrors(), "Should have no syntax errors.");
     }
 
 
-    // @Test
-    // void testIncrement() {
-    //     String input = "x++;";
-    //     JavaSubsetParser parser = parse(input);
-    //     ParseTree tree = parser.statement();
+    @Test
+    void testIncrement() {
+        String input = "x++;";
+        JavaSubsetParser parser = parse(input);
+        ParseTree tree = parser.statement();
 
-    //     assertNotNull(tree);
-    //     assertEquals(0, parser.getNumberOfSyntaxErrors(), "Should have no syntax errors.");
-    // }
+        assertNotNull(tree);
+        assertEquals(0, parser.getNumberOfSyntaxErrors(), "Should have no syntax errors.");
+    }
 
     
 
@@ -129,13 +129,13 @@ class JavaSubsetParserTest {
 
 
     @Test
-    void testVariableAssignmentInvalidMissingSemicolon() {
+    void testValidAssignmentExpression() {
         String input = "x = 10";
         JavaSubsetParser parser = parse(input);
         ParseTree tree = parser.statement();
 
         assertNotNull(tree);
-        assertNotEquals(0, parser.getNumberOfSyntaxErrors(), "Should have at least 1 syntax error due to missing semicolon.");
+        assertEquals(0, parser.getNumberOfSyntaxErrors(), "Should have no syntax error because it evaluates to an expression.");
     }
 
 
@@ -147,5 +147,45 @@ class JavaSubsetParserTest {
 
         assertNotNull(tree);
         assertNotEquals(0, parser.getNumberOfSyntaxErrors(), "Should have at least 1 syntax error due to unclosed string.");
+    }
+
+    @Test
+    void testValidForLoop() {
+        String input = """
+            class LoopTest {
+                void count() {
+                    for (int i = 0; i < 5; i++) {
+                        int x;
+                        x = i;
+                    }
+                }
+            }
+            """;
+        JavaSubsetParser parser = parse(input);
+        ParseTree tree = parser.compilationUnit();
+
+        assertNotNull(tree);
+        System.out.println(tree);
+        assertEquals(0, parser.getNumberOfSyntaxErrors(), "Should have no syntax errors.");
+    }
+
+    @Test
+    void testValidInfiniteForLoop() {
+        String input = """
+            class Spin {
+                void loop() {
+                    for (;;) {
+                        int x;
+                        x = 1;
+                        break;
+                    }
+                }
+            }
+            """;
+        JavaSubsetParser parser = parse(input);
+        ParseTree tree = parser.compilationUnit();
+
+        assertNotNull(tree);
+        assertEquals(0, parser.getNumberOfSyntaxErrors(), "Should have no syntax errors.");
     }
 }

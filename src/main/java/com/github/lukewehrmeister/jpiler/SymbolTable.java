@@ -11,7 +11,11 @@ public class SymbolTable {
     }
 
     public void add(String name, Symbol symbol) {
-        symbols.put(name, symbol);
+        if (symbols.containsKey(name)) {
+            System.err.println("Error: Variable '" + name + "' already declared in this scope.");
+        } else {
+            symbols.put(name, symbol);
+        }
     }
 
     public Symbol get(String name) {
@@ -21,4 +25,9 @@ public class SymbolTable {
     public boolean contains(String name) {
         return symbols.containsKey(name);
     }
+
+    public Map<String, Symbol> getSymbols() {
+        return symbols;
+    }
+    
 }

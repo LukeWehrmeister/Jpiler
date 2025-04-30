@@ -1,31 +1,56 @@
 package com.github.lukewehrmeister.jpiler;
 
 import org.antlr.v4.runtime.*;
+import org.antlr.v4.runtime.tree.*;
+
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 public class Main {
-    public static void main(String[] args) throws Exception {
-        // Read the input Java code
-        String input = "public class Example { int x = 10; x = 20; }";
+    public static void main(String[] args) {
+        if (args.length != 2) {
+            System.err.println("Usage: java -jar Jpiler.jar <input-file.java> <output-ir.txt>");
+            System.exit(1);
+        }
 
-        // Create an ANTLRInputStream from the input
-        CharStream inputStream = CharStreams.fromString(input);
+        String inputPath = args[0];
+        String outputPath = args[1];
 
+        try {
+            String code = new String(Files.readAllBytes(Paths.get(inputPath)));
 
-        // Create a lexer and a token stream
-        JavaSubsetLexer lexer = new JavaSubsetLexer(inputStream);
-        CommonTokenStream tokens = new CommonTokenStream(lexer);
+            CharStream input = CharStreams.fromString(code);
+            JavaSubsetLexer lexer = new JavaSubsetLexer(input);
+            CommonTokenStream tokens = new CommonTokenStream(lexer);
+            JavaSubsetParser parser = new JavaSubsetParser(tokens);
+            ParseTree tree = parser.compilationUnit();
 
-        // Create a parser
-        JavaSubsetParser parser = new JavaSubsetParser(tokens);
+            SymbolTableVisitor semanticVisitor = new SymbolTableVisitor();
+            semanticVisitor.visit(tree);
+            if (!semanticVisitor.getErrors().isEmpty()) {
+                System.err.println("Semantic Errors:");
+                for (String err : semanticVisitor.getErrors()) {
+                    System.err.println("  " + err);
+                }
+                System.exit(2);
+            }
 
-        // Parse the input to get the root node of the parse tree
-        JavaSubsetParser.CompilationUnitContext tree = parser.compilationUnit();
+            IRGeneratorVisitor irVisitor = new IRGeneratorVisitor(
+                semanticVisitor.getTableForContext(),
+                semanticVisitor.getSymbolMap()
+            );
+            irVisitor.visit(tree);
 
-        // Create a visitor and walk the tree
-        SymbolTableVisitor visitor = new SymbolTableVisitor();
-        visitor.visit(tree);
-
-        // After visiting, you can check the symbol table
-        // for any semantic errors or use the collected information
+            Files.writeString(Paths.get(outputPath), irVisitor.getIR());
+            System.out.println("IR written to " + outputPath);
+        } catch (IOException e) {
+            System.err.println("IO Error: " + e.getMessage());
+            System.exit(3);
+        } catch (Exception e) {
+            System.err.println("Unexpected Error: " + e.getMessage());
+            e.printStackTrace();
+            System.exit(4);
+        }
     }
 }
